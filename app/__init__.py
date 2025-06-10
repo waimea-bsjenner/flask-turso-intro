@@ -1,6 +1,7 @@
 from flask          import Flask
 from flask          import render_template
 from flask          import redirect
+from flask          import request
 from libsql_client  import create_client_sync
 from dotenv         import load_dotenv
 import os
@@ -67,12 +68,49 @@ def show_thing(id):
 def new_thing():
     return render_template("pages/thing-form.jinja")
 
+#-----------------------------------------------------------
+# Process a new thing
+#-----------------------------------------------------------
+@app.post("/add-thing")
+def add_thing():
+    # Get form data
+    name = request.form.get("name")
+    damage = request.form.get("damage")
+    firerate = request.form.get("firerate")
 
+    print(name)
+    print(damage)
+    print(firerate)
+
+    # Connect to the database
+    client = connect_db()
+
+    # Add the thingymabob
+    sql = """
+        INSERT INTO primary_weapons (name, damage, firerate)
+        VALUES (?, ?, ?)
+    """
+
+    # Values for new thing
+    values = [name, damage, firerate]
+
+    # Run the SQL
+    client.execute(sql, values)
+
+    # Redirect to homepage
+    return redirect("/")
 #-----------------------------------------------------------
 # Thing deletion
 #-----------------------------------------------------------
 @app.get("/delete/<int:id>")
 def delete_thing(id):
+
+    client = connect_db()
+
+    sql = "DELETE FROM primary_weapons WHERE id=?"
+    values = [id]
+    client.execute(sql, values)
+
     return redirect("/")
 
 
